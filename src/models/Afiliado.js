@@ -34,11 +34,11 @@ const AfiliadoSchema = new Schema(
             type: String,
         },
         fecha_inicio: {
-            type: Date,
+            type: String,
             default: Date.now
         },
         fecha_fin: {
-            type: Date,
+            type: String,
             default: Date.now
         },
         vigente: {

@@ -3,6 +3,8 @@ const express = require('express');
 const router =  express.Router();
 
 const User = require('../models/User');
+const Usuario = require('../models/Usuario');
+const Pago =  require('../models/Pago');
 const passport=require('passport');
 const { isAuthenticated } = require('../helpers/auth');
 
@@ -63,6 +65,42 @@ router.get('/admin/home_admin', isAuthenticated, function(req, res){
     res.render('users/homeAdmin.hbs');
 });
 
+router.get('/users/login_afiliado', function(req, res){
+    res.render('users/login_afiliado.hbs');
+});
+
+router.post('/users/logeando_afiliado', async(req, res) => {
+    
+    const{ email, password } = req.body;
+    const errors=[];
+
+        
+        const afiliados = await Usuario.find({correo: email, contraseña: password});
+        const afiliados2=[];
+
+    
+        for(var a in afiliados){
+            afiliados2.push({
+                _id: afiliados[a]._id, correo:afiliados[a].correo, contraseña:afiliados[a].contraseña,
+                nombres:afiliados[a].nombres, apellidos:afiliados[a].apellidos, dpi:afiliados[a].dpi,
+                direccion:afiliados[a].direccion, telefono:afiliados[a].telefono, rol:afiliados[a].rol,
+                vigente: afiliados[a].vigente, fecha_inicio: afiliados[a].fecha_inicio, fecha_fin: afiliados[a].fecha_fin
+                });
+        }
+
+        if(afiliados2){
+            let consulta = {};
+            consulta.codigo_afiliado=afiliados2._id;
+            const pagos2 = await Pago.find(consulta);
+   
+            res.render('users/homeAfiliado.hbs',{afiliados2});
+        }else{
+            errors.push({text:'El Usuario No Existe',});
+            res.render('users/login_afiliado.hbs', {errors});
+        }
+        
+    
+});
 
 
 

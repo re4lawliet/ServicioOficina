@@ -1,0 +1,44 @@
+<div class="col-md-4 mx-auto">
+  <div class="card text-center">
+    <div class="card-header">
+      <h3>Pago e Informacion de Afiliado</h3>
+    </div>
+    <div class="card-body">
+        {{#each afiliado2}}
+        <b>Correo:</b> {{correo}}
+        <b>Nombres:</b> {{nombres}}
+        <b>Apellidos:</b> {{apellidos}}
+        <b>DPI:</b>{{dpi}}
+        <b>Direccion:</b>{{direccion}}
+        <b>Telefono:</b>{{telefono}}
+        {{#if vigente}}
+            <b>Vigencia:</b>Suscrito
+        {{else}}
+            <b>Vigencia:</b>No Suscrito o Vencida
+        {{/if }}
+        
+        <form action="/admin/pagar_afiliado/{{_id}}" method="POST">
+            <div class="form-group">
+                <input type="text" name="monto" class="form-control" placeholder="Monto" autofocus/>
+            </div>
+            <input type="hidden" name="_method" value="DELETE">
+            <button type="submit" class="btn btn-success btn-block btn-sm">Pagar Membresia</button>
+        </form>
+        {{/each}}
+        <br>
+        <br>
+        <h3>Listado de Pagos</h3>
+        <br>
+        {{#each pago2}}
+            <div class="card text-center">
+                <div class="card-header">
+                    <b>Correo:</b> {{_id}}
+                    <b>Nombres:</b> {{monto}}
+                    <b>Apellidos:</b> {{fecha}}
+                </div>
+            </div>
+        {{/each}}
+    </div>
+  </div>
+</div>
+ 

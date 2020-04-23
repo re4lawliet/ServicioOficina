@@ -1,4 +1,4 @@
-<h1>Listado de Afiliados</h1>
+<h1>Bienvenido Usuario Afiliado Page su Membresia Online</h1>
 <div class="row">
   {{#each afiliados2 }}
     <div class="col-md-3">
@@ -19,17 +19,10 @@
 
             <p> {{ nombres }},{{ apellidos }}, {{ dpi }},{{ rol }},{{ telefono }}, {{direccion}} </p>
             <!-- DELETE REQUEST -->
-            <form action="/admin/delete_afiliado/{{_id}}?_method=DELETE" method="POST">
+            <form action="/admin/ver_afiliado/{{_id}}" method="GET">
             <input type="hidden" name="_method" value="DELETE">
-            <button type="submit" class="btn btn-danger btn-block btn-sm">Eliminar</button>
+            <button type="submit" class="btn btn-success btn-block btn-sm">Pagar Membresia</button>
             </form>
-            {{#if vigente}}
-            {{else}}
-                <form action="/admin/ver_afiliado/{{_id}}" method="GET">
-                <input type="hidden" name="_method" value="DELETE">
-                <button type="submit" class="btn btn-success btn-block btn-sm">Pagar Membresia</button>
-                </form>
-            {{/if }}
             
         </div>
         </div>

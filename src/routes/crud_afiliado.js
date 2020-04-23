@@ -6,6 +6,8 @@ const multer = require('multer');
 const upload = require('../config/storage');
 
 const Usuario = require('../models/Usuario');
+const Pago =  require('../models/Pago');
+const URL_SERVER='http://localhost:3001/';
 
 
 //************       Metodos de Funcionalidad   *************************/
@@ -96,17 +98,182 @@ router.get('/admin/cancelar_afiliado/:id', async(req, res) => {
     res.redirect('/admin/lista_afiliados');
 });
 
-router.get('/admin/pagar_afiliado/:id', async(req, res) => {
+router.get('/admin/ver_afiliado/:id', async(req, res) => {
     
-    const afiliados=await Usuario.findById(req.params.id);
-    afiliados.vigente='1';
-    await afiliados.save();
+    const id_afiliado=req.params.id;
+    const URL=URL_SERVER+"afiliado/"+id_afiliado;
+    const URL_PAGOS=URL_SERVER+"pago/"+id_afiliado;
+    fetch(URL, {
+        method: "get",
+        headers: { "Content-Type": "application/json" },
+        timeout: 3000,
+    })
+    .then((res) => res.json())
+    .then((json) =>
 
-    req.flash('succes_msg','Suscripcion Pagada');
-    res.redirect('/admin/lista_afiliados');
+        fetch(URL_PAGOS, {
+            method: "get",
+            headers: { "Content-Type": "application/json" },
+            timeout: 3000,
+        })
+        .then((res) => res.json())
+        .then((json2) =>
+            res.render("afiliado/pago_afiliado.hbs", { afiliado2: json, pago2:json2 })
+        )
+        .catch(function (err) {
+          return res
+            .status(500)
+            .json({ estado: 500, mensaje: "Tiempo de respuesta exedido." });
+        })
+    )
+    .catch(function (err) {
+      return res
+        .status(500)
+        .json({ estado: 500, mensaje: "Tiempo de respuesta exedido." });
+    });
+
+});
+
+router.post('/admin/pagar_afiliado/:id', async(req, res) => {
+    const {monto} = req.body;
+    const idd=req.params.id;
+    const URL=URL_SERVER+"pago/"+idd+"/"+ monto;
+    
+    fetch(URL, {
+        method: "post",
+        headers: { "Content-Type": "application/json" },
+        timeout: 3000,
+    })
+    .then((res) => res.json())
+    .then((json) =>
+        res.render('afiliado/mensaje_pago.hbs', { 
+            mensaje: json
+        })
+    )
+    .catch(function (err) {
+      return res
+        .status(500)
+        .json({ estado: 500, mensaje: "Tiempo de respuesta exedido." });
+    });
 });
 
 
+//************       Metodos de Servicio   *************************/
+
+router.get('/afiliado/:codigo/:password', async(req, res) => {
+    
+    const idd=req.params.codigo;
+    const pass=req.params.password;
+
+    if(!idd){
+        res.send('codigo de afiliado no existe').status(404);
+    }
+    if(!pass){
+        res.send('autenticacion no exitosa').status(401);
+    }
+
+    let consulta = {};
+    consulta._id=idd;
+    consulta.contraseña=pass;
+    const afiliado = await Usuario.find(consulta);
+
+    if(Object.keys(afiliado).length === 0){ 
+        res.send('Fallo En Autenticacion');
+    }else{
+        res.send(afiliado).status(200);
+    }
+
+});
+
+router.get('/afiliado/:codigo/:password?', async(req, res) => {
+    
+    const idd=req.params.codigo;
+    const pass=req.params.password;
+
+    if(!idd){
+        res.send('codigo de afiliado no existe').status(404);
+    }
+
+    let consulta = {};
+    consulta._id=idd;
+
+    const afiliado = await Usuario.find(consulta);
+
+    if(Object.keys(afiliado).length === 0){ 
+        res.send('Fallo En Autenticacion');
+    }else{
+        res.send(afiliado).status(200);
+    }
+
+});
+
+router.get('/pago/:codigo', async(req, res) => {
+
+    const idd=req.params.codigo;
+        
+    if(!idd){
+        res.send('codigo de afiliado no existe').status(404);
+    }
+    let consulta = {};
+    consulta.codigo_afiliado=idd;
+    
+    const pagos = await Pago.find(consulta);
+    res.send(pagos).status(200);
+   
+});
+
+router.post('/pago/:codigo/:monto', async(req, res) => {
+
+    const afiliados = await Usuario.find({rol: 'afiliado'}).sort({date:'desc'})
+    const afiliados2 = [];
+    for(var a in afiliados){
+        afiliados2.push({
+            _id: afiliados[a]._id, correo:afiliados[a].correo, contraseña:afiliados[a].contraseña,
+            nombres:afiliados[a].nombres, apellidos:afiliados[a].apellidos, dpi:afiliados[a].dpi,
+            direccion:afiliados[a].direccion, telefono:afiliados[a].telefono, rol:afiliados[a].rol,
+            vigente: afiliados[a].vigente, fecha_inicio: afiliados[a].fecha_inicio, fecha_fin: afiliados[a].fecha_fin
+            });
+    }
+
+    const mensaje={};
+
+    const idd=req.params.codigo;
+    const monto=req.params.monto;
+    const user=await Usuario.findOne({_id: idd});
+    if(!user){
+        afiliados[0].nombres='codigo de afiliado no existe';
+        res.send(afiliados).status(406);  
+    }else{
+        if(!monto){
+            afiliados[0].nombres='Monto invalido no existe';
+            res.send(afiliados).status(406);
+        }else{
+            if(monto!="100"){
+                afiliados[0].nombres='Monto debe ser de 100Q';
+                res.send(afiliados).status(406);
+            }else{
+                if(user.vigente){
+                    afiliados[0].nombres='el usuario aun tiene membresia';
+                    res.send(afiliados).status(406);
+                }else{
+                    const new_pago = new Pago();
+                    new_pago.codigo_afiliado =  idd;
+                    new_pago.monto = monto; 
+                    new_pago.save();
+
+                    const afiliados2=await Usuario.findById(idd);
+                    afiliados2.vigente='1';
+                    await afiliados2.save();
+
+                    afiliados[0].nombres='PAgo Exitoso';
+                    res.send(afiliados).status(406);
+                }
+            }
+        }
+    }
+    
+});
 
 
 module.exports = router;
+
