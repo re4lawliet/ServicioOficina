@@ -1,0 +1,45 @@
+<div class="row">
+  {{#each afiliados2 }}
+    <div class="col-md-3">
+        <div class="card">
+        <div class="card-body">
+            <h4 class="card-title d-flex justify-content-between align-items-center">
+            {{ correo }}               
+            </h4>
+            <a href="/admin/cancelar_afiliado/{{_id}}"><i class="fas fa-edit"></i></a>
+
+            {{#if vigente}}
+                <a href="/admin/ver/{{_id}}"><i class="fas fa-user-check"></i>Suscrito</a>
+            {{else}}
+                <i class="fas fa-user-slash"></i>No Suscrito
+            {{/if }}
+                
+            
+
+            <p> {{ nombres }},{{ apellidos }}, {{ dpi }},{{ rol }},{{ telefono }}, {{direccion}} </p>
+            <!-- DELETE REQUEST -->
+            <form action="/admin/delete_afiliado/{{_id}}?_method=DELETE" method="POST">
+            <input type="hidden" name="_method" value="DELETE">
+            <button type="submit" class="btn btn-danger btn-block btn-sm">Eliminar</button>
+            </form>
+            {{#if vigente}}
+            {{else}}
+                <form action="/admin/pagar_afiliado/{{_id}}" method="GET">
+                <input type="hidden" name="_method" value="DELETE">
+                <button type="submit" class="btn btn-success btn-block btn-sm">Pagar Membresia</button>
+                </form>
+            {{/if }}
+            
+        </div>
+        </div>
+    </div>
+  {{else}}
+  <div class="card mx-auto">
+    <div class="card-body">
+      <h1>Hola </h1>
+      <p clsss="lead">No has creado ningun Afiliado.</p>
+      <a href="/admin/new_afiliado" class="btn btn-success btn-block">Create Uno!</a>
+    </div>
+  </div>
+  {{/each}}
+</div>

@@ -48,6 +48,8 @@ app.use((req, res, next) => {
 // Routes
 app.use(require('./routes/index.js'));
 app.use(require('./routes/users.js'));
+app.use(require('./routes/crud_afiliado.js'));
+app.use(require('./routes/crud_ajustador.js'));
 
 // Static Filesa
 app.use(express.static(path.join(__dirname, 'public')));

@@ -18,23 +18,32 @@
           
         {{#if user}}
           <li class="nav-item">
-            <a class="nav-link" href="/admin/home_admin">Menu de Usuario Administrador </a>
+            <a class="nav-link" href="/admin/home_admin">Menu Admin </a>
           </li>
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              Menu
+              Ver Usuarios
             </a>
             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-              <a class="dropdown-item" href="/notas/notas">All Notes</a>
-              <a class="dropdown-item" href="/notas/nueva-nota">Add A Note</a>
-              <a class="dropdown-item" href="/vehiculos/all">Todos los Vehiculos</a>
-              <a class="dropdown-item" href="/vehiculos/nuevo_vehiculo">Agregar Vehiculo</a>
+              <a class="dropdown-item" href="/admin/lista_ajustadores">Ver Ajustadores</a>
+              <a class="dropdown-item" href="/admin/lista_afiliados">Ver Afiliados</a>
+              <div class="dropdown-divider"></div>
+              <a class="dropdown-item" href="/users/logout">Logout</a>
+            </div>
+          </li>
+           <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              Crear Usuarios
+            </a>
+            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+               <a class="dropdown-item" href="/admin/new_ajustador">Crear Ajustador</a>
+              <a class="dropdown-item" href="/admin/new_afiliado">Crear Afiliado</a>
               <div class="dropdown-divider"></div>
               <a class="dropdown-item" href="/users/logout">Logout</a>
             </div>
           </li>
         {{else}}
-          <li class="nav-item">
+         <li class="nav-item">
             <a class="nav-link" href="/users/login">Login</a>
           </li>
           <li class="nav-item">
