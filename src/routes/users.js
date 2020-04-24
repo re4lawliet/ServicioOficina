@@ -21,6 +21,7 @@ router.post('/users/login', passport.authenticate('local', {
 router.get('/users/logout', function(req, res){
     req.logOut();
     res.render('index.hbs');
+    res.locals.user2=undefined;
 });
 
 router.get('/users/form_registro', function(req, res){
@@ -73,8 +74,6 @@ router.post('/users/logeando_afiliado', async(req, res) => {
     
     const{ email, password } = req.body;
     const errors=[];
-
-        
         const afiliados = await Usuario.find({correo: email, contraseña: password});
         const afiliados2=[];
 
@@ -88,15 +87,16 @@ router.post('/users/logeando_afiliado', async(req, res) => {
                 });
         }
 
-        if(afiliados2){
+        if(Object.keys(afiliados2).length === 0){  
+            errors.push({text:'El Usuario No Existe',});
+            res.render('users/login_afiliado.hbs',{errors});
+        }else{
             let consulta = {};
             consulta.codigo_afiliado=afiliados2._id;
             const pagos2 = await Pago.find(consulta);
-   
+            globalUser=afiliados2._id;
+            res.locals.user2=afiliados2;
             res.render('users/homeAfiliado.hbs',{afiliados2});
-        }else{
-            errors.push({text:'El Usuario No Existe',});
-            res.render('users/login_afiliado.hbs', {errors});
         }
         
     

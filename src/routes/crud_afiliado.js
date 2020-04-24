@@ -8,6 +8,8 @@ const upload = require('../config/storage');
 const Usuario = require('../models/Usuario');
 const Pago =  require('../models/Pago');
 const URL_SERVER='http://localhost:3001/';
+const jwt = require('jsonwebtoken');
+const data = require('../keys.json')
 
 
 //************       Metodos de Funcionalidad   *************************/
@@ -65,8 +67,6 @@ router.get('/admin/lista_afiliados', async (req, res) => {
 
     const afiliados = await Usuario.find({rol: 'afiliado'}).sort({date:'desc'})
     const afiliados2=[];
-
-    
     for(var a in afiliados){
         afiliados2.push({
             _id: afiliados[a]._id, correo:afiliados[a].correo, contraseña:afiliados[a].contraseña,
@@ -75,8 +75,6 @@ router.get('/admin/lista_afiliados', async (req, res) => {
             vigente: afiliados[a].vigente, fecha_inicio: afiliados[a].fecha_inicio, fecha_fin: afiliados[a].fecha_fin
             });
     }
-
-    
     res.render('afiliado/lista_afiliados.hbs', { 
         afiliados2 
     });
@@ -99,10 +97,35 @@ router.get('/admin/cancelar_afiliado/:id', async(req, res) => {
 });
 
 router.get('/admin/ver_afiliado/:id', async(req, res) => {
-    
+
+    const id_afiliado=req.params.id;
+    const afiliados = await Usuario.find({_id: id_afiliado});
+    const afiliados2=[];
+    for(var a in afiliados){
+        afiliados2.push({
+            _id: afiliados[a]._id, correo:afiliados[a].correo, contraseña:afiliados[a].contraseña,
+            nombres:afiliados[a].nombres, apellidos:afiliados[a].apellidos, dpi:afiliados[a].dpi,
+            direccion:afiliados[a].direccion, telefono:afiliados[a].telefono, rol:afiliados[a].rol,
+            vigente: afiliados[a].vigente, fecha_inicio: afiliados[a].fecha_inicio, fecha_fin: afiliados[a].fecha_fin
+            });
+    }
+
+    const pagos = await Pago.find({codigo_afiliado: id_afiliado});
+    const pagos2=[];
+    for(var a in pagos){
+        pagos2.push({
+            _id: pagos[a]._id, codigo_afiliado:pagos[a].codigo_afiliado, monto:pagos[a].monto,
+            fecha:pagos[a].fecha
+            });
+    }
+
+
+    res.render("afiliado/pago_afiliado.hbs", { afiliado2: afiliados2, pago2:pagos2 });
+
+    /*
     const id_afiliado=req.params.id;
     const URL=URL_SERVER+"afiliado/"+id_afiliado;
-    const URL_PAGOS=URL_SERVER+"pago/"+id_afiliado;
+    const URL_PAGOS=URL_SERVER+"pago?codigo="+id_afiliado;
     fetch(URL, {
         method: "get",
         headers: { "Content-Type": "application/json" },
@@ -123,21 +146,70 @@ router.get('/admin/ver_afiliado/:id', async(req, res) => {
         .catch(function (err) {
           return res
             .status(500)
-            .json({ estado: 500, mensaje: "Tiempo de respuesta exedido." });
+            .json({ estado: 500, mensaje: "Fallo en SErvicio Pago GET" });
         })
     )
     .catch(function (err) {
       return res
         .status(500)
-        .json({ estado: 500, mensaje: "Tiempo de respuesta exedido." });
-    });
+        .json({ estado: 500, mensaje: "FAllo en Get Afiliado" });
+    });*/
 
 });
 
 router.post('/admin/pagar_afiliado/:id', async(req, res) => {
     const {monto} = req.body;
     const idd=req.params.id;
-    const URL=URL_SERVER+"pago/"+idd+"/"+ monto;
+
+
+    const afiliados = await Usuario.find({rol: 'afiliado'}).sort({date:'desc'})
+    const afiliados2 = [];
+    for(var a in afiliados){
+        afiliados2.push({
+            _id: afiliados[a]._id, correo:afiliados[a].correo, contraseña:afiliados[a].contraseña,
+            nombres:afiliados[a].nombres, apellidos:afiliados[a].apellidos, dpi:afiliados[a].dpi,
+            direccion:afiliados[a].direccion, telefono:afiliados[a].telefono, rol:afiliados[a].rol,
+            vigente: afiliados[a].vigente, fecha_inicio: afiliados[a].fecha_inicio, fecha_fin: afiliados[a].fecha_fin
+            });
+    }
+
+    const mensaje={};
+    const user=await Usuario.findOne({_id: idd});
+    if(!user){
+        req.flash('succes_msg', 'codigo de afiliado no existe');
+        res.redirect('/admin/lista_afiliados');
+    }else{
+        if(!monto){
+            req.flash('succes_msg', 'Monto Invalido');
+            res.redirect('/admin/lista_afiliados');
+        }else{
+            if(monto!="100"){
+                req.flash('succes_msg', 'Monto debe ser de 100Q');
+                res.redirect('/admin/lista_afiliados');
+            }else{
+                if(user.vigente){
+                    res.send('el usuario aun tiene membresia');           
+                }else{
+                    const new_pago = new Pago();
+                    new_pago.codigo_afiliado =  idd;
+                    new_pago.monto = monto; 
+                    new_pago.save();
+
+                    const afiliados2=await Usuario.findById(idd);
+                    afiliados2.vigente='1';
+                    await afiliados2.save();
+
+                    req.flash('succes_msg', 'Pago Exitoso');
+                    res.redirect('/admin/lista_afiliados');
+                }
+            }
+        }
+    }
+
+    /*
+    const {monto} = req.body;
+    const idd=req.params.id;
+    const URL=URL_SERVER+"pago?codigo="+idd+"&monto="+ monto;
     
     fetch(URL, {
         method: "post",
@@ -153,18 +225,22 @@ router.post('/admin/pagar_afiliado/:id', async(req, res) => {
     .catch(function (err) {
       return res
         .status(500)
-        .json({ estado: 500, mensaje: "Tiempo de respuesta exedido." });
-    });
+        .json({ estado: 500, mensaje: "Fallo En llamada a Pago POST" });
+    });*/
 });
 
 
 //************       Metodos de Servicio   *************************/
 
-router.get('/afiliado/:codigo/:password', async(req, res) => {
+//Parametros [jwt:, codigo:, password:]
+router.get('/afiliado', async(req, res) => {
     
-    const idd=req.params.codigo;
-    const pass=req.params.password;
+    const idd=req.query.codigo;
+    const pass=req.query.password;
 
+    if(!req.query.jwt){
+        res.send('El JWT no es válido o no contiene el scope de este servicio').status(403);
+    }
     if(!idd){
         res.send('codigo de afiliado no existe').status(404);
     }
@@ -184,33 +260,15 @@ router.get('/afiliado/:codigo/:password', async(req, res) => {
     }
 
 });
+//Parametros [codigo:]
+router.get('/pago', async(req, res) => {
 
-router.get('/afiliado/:codigo/:password?', async(req, res) => {
+    const idd=req.query.codigo;
+
     
-    const idd=req.params.codigo;
-    const pass=req.params.password;
-
-    if(!idd){
-        res.send('codigo de afiliado no existe').status(404);
-    }
-
-    let consulta = {};
-    consulta._id=idd;
-
-    const afiliado = await Usuario.find(consulta);
-
-    if(Object.keys(afiliado).length === 0){ 
-        res.send('Fallo En Autenticacion');
-    }else{
-        res.send(afiliado).status(200);
-    }
-
-});
-
-router.get('/pago/:codigo', async(req, res) => {
-
-    const idd=req.params.codigo;
-        
+    if(!req.query.jwt){
+        res.send('El JWT no es válido o no contiene el scope de este servicio').status(403);
+    }  
     if(!idd){
         res.send('codigo de afiliado no existe').status(404);
     }
@@ -221,9 +279,11 @@ router.get('/pago/:codigo', async(req, res) => {
     res.send(pagos).status(200);
    
 });
-
-router.post('/pago/:codigo/:monto', async(req, res) => {
-
+//Parametros [codigo: monto:]
+router.post('/pago', async(req, res) => {
+    if(!req.query.jwt){
+        res.send('El JWT no es válido o no contiene el scope de este servicio').status(403);
+    }
     const afiliados = await Usuario.find({rol: 'afiliado'}).sort({date:'desc'})
     const afiliados2 = [];
     for(var a in afiliados){
@@ -237,8 +297,8 @@ router.post('/pago/:codigo/:monto', async(req, res) => {
 
     const mensaje={};
 
-    const idd=req.params.codigo;
-    const monto=req.params.monto;
+    const idd=req.query.codigo;
+    const monto=req.query.monto;
     const user=await Usuario.findOne({_id: idd});
     if(!user){
         afiliados[0].nombres='codigo de afiliado no existe';
@@ -272,6 +332,84 @@ router.post('/pago/:codigo/:monto', async(req, res) => {
         }
     }
     
+});
+
+
+//Parametros [codigo]
+router.get('/afiliado/:codigo', async(req, res) => {
+    
+    const idd=req.params.codigo;
+
+    if(!idd){
+        res.send('codigo de afiliado no existe').status(404);
+    }
+
+    let consulta = {};
+    consulta._id=idd;
+
+    const afiliado = await Usuario.find(consulta);
+
+    if(Object.keys(afiliado).length === 0){ 
+        res.send('Fallo En Autenticacion');
+    }else{
+        res.send(afiliado).status(200);
+    }
+
+});
+router.get('/jwt', async(req, res) => {
+
+    /*var URL_TOKEN='http://3.94.79.29:8000';
+
+    var credenciales = {
+        client_id: 'giovannilopez', 
+        client_secret: 'miacceso123'
+    }
+    var token = await fetchQuery(URL_TOKEN+'/getToken/','POST', credenciales).then()
+    .catch(function(err){
+        console.log(err.status, err.statusText)
+    });
+    console.log(token);*/
+
+    
+    const token = await fetch("http://35.193.70.253/GetToken?client_id=123456789123456789&password=subastas123**", {
+        method: "get",
+        headers: { "Content-Type": "application/json" },
+        timeout: 3000,
+    })
+    .then((res) => res.json())
+    .catch(function (err) {
+      return res
+        .status(500)
+        .json({ estado: 500, mensaje: "Tiempo de respuesta exedido." });
+    });
+
+    if(!token){
+        return res.status(401).json({
+            auth: false,
+            mensaje: 'No hay Token'
+        });
+    }
+
+
+    //return jwt.verify(token, ['public_key'], { algorithms: ["RS256"] });
+    jwt.verify(token.token, data.auctions.public_key, (err, data) => {
+        if(err){
+            console.log('entro a rerror');
+            res.sendStatus(403);
+        }else{
+            res.json({
+                text: 'hola acepte token',
+                text2: ':D :D :D',
+                data: data
+            });
+        }      
+    });
+
+    /*console.log(token.token);
+    const decodificada = jwt.verify(token.token, data.auctions.public_key, { algorithms: ["RS256"] });
+    console.log(decodificada);
+    res.send('Si Jala');*/
+   
 });
 
 

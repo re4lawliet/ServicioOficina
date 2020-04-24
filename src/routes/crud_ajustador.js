@@ -83,5 +83,7 @@ router.delete('/admin/delete_ajustador/:id', async(req, res) => {
     res.redirect('/admin/lista_ajustadores');
 });
 
+//************       Metodos de Servicio   *************************/
+
 
 module.exports = router;

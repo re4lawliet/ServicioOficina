@@ -43,15 +43,31 @@
             </div>
           </li>
         {{else}}
-         <li class="nav-item">
-            <a class="nav-link" href="/users/login">Login</a>
+          {{#if user2}}
+              <li class="nav-item">
+            <a class="nav-link" href="/users/login_afiliado">Menu Afiliado </a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/users/login_afiliado">Login Afiliado</a>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              Salir
+            </a>
+            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <div class="dropdown-divider"></div>
+              <a class="dropdown-item" href="/users/logout">Logout</a>
+            </div>
           </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/users/form_registro">Register</a>
-          </li>
+          {{else}}
+            <li class="nav-item">
+              <a class="nav-link" href="/users/login">Login</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/users/login_afiliado">Login Afiliado</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/users/form_registro">Register</a>
+            </li>
+          {{/if}}
+         
         {{/if}}
       </ul>
     </div>

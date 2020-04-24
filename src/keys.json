@@ -1,0 +1,17 @@
+{
+    "office": {
+      "client_id": "999888777666555444",
+      "password": "kirvihueco",
+      "public_key": "-----BEGIN PUBLIC KEY-----\nMFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAKoQpcoKPcXVjqyHuhuyizVnkwxxAvOw\nCTdToxwdO6/8CRW2+kBUvOEPFsODXsiOWOXENRgNm1JykniciWVDuwECAwEAAQ==\n-----END PUBLIC KEY----"
+    },
+    "insurance": {
+      "client_id": "987654321987654321",
+      "password": "fishinhueco",
+      "public_key": "-----BEGIN PUBLIC KEY-----\nMFswDQYJKoZIhvcNAQEBBQADSgAwRwJAat+vFGeCGUZUwDiYrplM2K1n8xBHhX+L\nhOrMP0nO0fcJJNDDJyqjjS04xWaugEeJS1kn+pimTLYDGIX359hDxQIDAQAB\n-----END PUBLIC KEY-----"
+    },
+    "auctions": {
+      "client_id": "123456789123456789",
+      "password": "alanhueco",
+      "public_key": "-----BEGIN PUBLIC KEY-----\nMFswDQYJKoZIhvcNAQEBBQADSgAwRwJAYNG4GQgnnkVzvtqaAAo5miHY6jwxxzRS\nxh4GvNhsQVq3F3j89Z3WEVZCQ3zt8w5+l800flROOnL5Vl1eOhhIDQIDAQAB\n-----END PUBLIC KEY-----"
+    }
+  }

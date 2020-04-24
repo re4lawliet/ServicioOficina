@@ -10,14 +10,12 @@ const fetchQuery = (url, method, body, head) => {
     })
       .then(response => {
         if (!response.ok) {
-          console.log(response);  
           reject(response)
         }
         resolve(response.json())
       })
       .catch(err => {
-        console.log(err).reject(err)
-        
+        reject(err)
       })
   })
 }

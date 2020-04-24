@@ -42,8 +42,11 @@ app.use((req, res, next) => {
     res.locals.error_msg = req.flash('error_msg');
     res.locals.error = req.flash('error_msg');
     res.locals.user = req.user || null;
+    res.locals.user2=req.user || null;
     next();
 });
+globalUser="User";
+globalRol="Rol";
 
 // Routes
 app.use(require('./routes/index.js'));
