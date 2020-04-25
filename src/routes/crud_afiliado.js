@@ -252,11 +252,16 @@ router.get('/afiliado', async(req, res) => {
     consulta._id=idd;
     consulta.contraseña=pass;
     const afiliado = await Usuario.find(consulta);
-
+    
+    const objretorno={};
+    objretorno.codigo=afiliado[0]._id;
+    objretorno.nombre=afiliado[0].nombres + " " +afiliado[0].apellidos;
+    objretorno.vigente=afiliado[0].vigente;
+    console.log(objretorno);
     if(Object.keys(afiliado).length === 0){ 
         res.send('Fallo En Autenticacion');
     }else{
-        res.send(afiliado[0]).status(200);
+        res.send(objretorno).status(200);
     }
 
 });
