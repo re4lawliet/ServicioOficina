@@ -256,7 +256,7 @@ router.get('/afiliado', async(req, res) => {
     if(Object.keys(afiliado).length === 0){ 
         res.send('Fallo En Autenticacion');
     }else{
-        res.send(afiliado).status(200);
+        res.send(afiliado[0]).status(200);
     }
 
 });
@@ -276,7 +276,7 @@ router.get('/pago', async(req, res) => {
     consulta.codigo_afiliado=idd;
     
     const pagos = await Pago.find(consulta);
-    res.send(pagos).status(200);
+    res.send(pagos[0]).status(200);
    
 });
 //Parametros [codigo: monto:]
