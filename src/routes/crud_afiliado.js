@@ -257,6 +257,7 @@ router.get('/afiliado', async(req, res) => {
     objretorno.codigo=afiliado[0]._id;
     objretorno.nombre=afiliado[0].nombres + " " +afiliado[0].apellidos;
     objretorno.vigente=afiliado[0].vigente;
+    objretorno.rol=afiliado[0].rol;
     console.log(objretorno);
     if(Object.keys(afiliado).length === 0){ 
         res.send('Fallo En Autenticacion');
