@@ -10,6 +10,7 @@ const Pago =  require('../models/Pago');
 const URL_SERVER='http://localhost:3001/';
 const jwt = require('jsonwebtoken');
 const data = require('../keys.json');
+const KEY="201314646";
 
 
 
@@ -242,28 +243,43 @@ router.get('/afiliado', async(req, res) => {
     if(!req.query.jwt){
         res.send('El JWT no es válido o no contiene el scope de este servicio').status(403);
     }
-    if(!idd){
-        res.send('codigo de afiliado no existe').status(404);
-    }
-    if(!pass){
-        res.send('autenticacion no exitosa').status(401);
-    }
 
-    let consulta = {};
-    consulta._id=idd;
-    consulta.contraseña=pass;
-    const afiliado = await Usuario.find(consulta);
+    //Validacion del Toquen
+    const validaToken=true;
+    const token=req.query.jwt;
+    jwt.verify(token, KEY, (err, data) => {
+        if(err){
+            console.log('El JWT no es válido');
+            alidaToken=false;
+            res.send('El JWT no es válido').status(403);
+            
+        }     
+    });
     
-    const objretorno={};
-    objretorno.codigo=afiliado[0]._id;
-    objretorno.nombre=afiliado[0].nombres + " " +afiliado[0].apellidos;
-    objretorno.vigente=afiliado[0].vigente;
-    objretorno.rol=afiliado[0].rol;
-    console.log(objretorno);
-    if(Object.keys(afiliado).length === 0){ 
-        res.send('Fallo En Autenticacion');
-    }else{
-        res.send(objretorno).status(200);
+    if(validaToken){
+        if(!idd){
+            res.send('codigo de afiliado no existe').status(404);
+        }
+        if(!pass){
+            res.send('autenticacion no exitosa').status(401);
+        }
+    
+        let consulta = {};
+        consulta._id=idd;
+        consulta.contraseña=pass;
+        const afiliado = await Usuario.find(consulta);
+        
+        const objretorno={};
+        objretorno.codigo=afiliado[0]._id;
+        objretorno.nombre=afiliado[0].nombres + " " +afiliado[0].apellidos;
+        objretorno.vigente=afiliado[0].vigente;
+        objretorno.rol=afiliado[0].rol;
+        console.log(objretorno);
+        if(Object.keys(afiliado).length === 0){ 
+            res.send('Fallo En Autenticacion');
+        }else{
+            res.send(objretorno).status(200);
+        }
     }
 
 });
@@ -271,24 +287,37 @@ router.get('/afiliado', async(req, res) => {
 router.get('/pago', async(req, res) => {
 
     const idd=req.query.codigo;
-
     
     if(!req.query.jwt){
         res.send('El JWT no es válido o no contiene el scope de este servicio').status(403);
     }  
-    if(!idd){
-        res.send('codigo de afiliado no existe').status(404);
+
+    //Validacion del Toquen
+    const validaToken=true;
+    const token=req.query.jwt;
+    jwt.verify(token, KEY, (err, data) => {
+        if(err){
+            console.log('El JWT no es válido');
+            alidaToken=false;
+            res.send('El JWT no es válido').status(403);
+            
+        }     
+    });
+
+    if(validaToken){
+        if(!idd){
+            res.send('codigo de afiliado no existe').status(404);
+        }
+        let consulta = {};
+        consulta.codigo_afiliado=idd;
+        
+        const pagos = await Pago.find(consulta).sort({date:'desc'});
+        const pagos_retorno={};
+        pagos_retorno.id=pagos[0]._id;
+        pagos_retorno.monto=pagos[0].monto;
+        pagos_retorno.fecha=pagos[0].fecha;
+        res.send(pagos_retorno).status(200);
     }
-    let consulta = {};
-    consulta.codigo_afiliado=idd;
-    
-    const pagos = await Pago.find(consulta).sort({date:'desc'});
-    const pagos_retorno={};
-    pagos_retorno.id=pagos[0]._id;
-    pagos_retorno.monto=pagos[0].monto;
-    pagos_retorno.fecha=pagos[0].fecha;
-    res.send(pagos_retorno).status(200);
-   
 });
 //Parametros [codigo: monto:]
 router.post('/pago', async(req, res) => {
@@ -345,6 +374,7 @@ router.post('/pago', async(req, res) => {
     
 });
 
+//************      OTROS   *************************/
 //Parametros [codigo]
 router.get('/afiliado/:codigo', async(req, res) => {
     
