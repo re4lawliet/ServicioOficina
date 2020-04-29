@@ -311,7 +311,7 @@ router.get('/pago', async(req, res) => {
         let consulta = {};
         consulta.codigo_afiliado=idd;
         
-        const pagos = await Pago.find(consulta).sort({date:'desc'});
+        const pagos = await Pago.find(consulta).sort({fecha:'desc'});
         const pagos_retorno={};
         pagos_retorno.id=pagos[0]._id;
         pagos_retorno.monto=pagos[0].monto;
