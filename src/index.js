@@ -7,6 +7,7 @@ const flash = require('connect-flash');
 const passport = require('passport');
 const multer = require('multer');
 const upload = multer({dest: 'uploads/'});
+const bodyParser = require('body-parser');
 
 //Inicializaciones
 const app = express();
@@ -56,7 +57,7 @@ app.use(require('./routes/crud_ajustador.js'));
 
 // Static Filesa
 app.use(express.static(path.join(__dirname, 'public')));
-
+app.use(bodyParser());
 
 
 // Server is Listening

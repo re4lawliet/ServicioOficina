@@ -9,7 +9,8 @@ const Usuario = require('../models/Usuario');
 const Pago =  require('../models/Pago');
 const URL_SERVER='http://localhost:3001/';
 const jwt = require('jsonwebtoken');
-const data = require('../keys.json')
+const data = require('../keys.json');
+
 
 
 //************       Metodos de Funcionalidad   *************************/
@@ -281,8 +282,12 @@ router.get('/pago', async(req, res) => {
     let consulta = {};
     consulta.codigo_afiliado=idd;
     
-    const pagos = await Pago.find(consulta);
-    res.send(pagos[0]).status(200);
+    const pagos = await Pago.find(consulta).sort({date:'desc'});
+    const pagos_retorno={};
+    pagos_retorno.id=pagos[0]._id;
+    pagos_retorno.monto=pagos[0].monto;
+    pagos_retorno.fecha=pagos[0].fecha;
+    res.send(pagos_retorno).status(200);
    
 });
 //Parametros [codigo: monto:]
@@ -339,7 +344,6 @@ router.post('/pago', async(req, res) => {
     }
     
 });
-
 
 //Parametros [codigo]
 router.get('/afiliado/:codigo', async(req, res) => {
