@@ -283,7 +283,7 @@ router.get('/afiliado', async(req, res) => {
     }
 
 });
-//Parametros [codigo:]
+//Parametros [jwt: codigo:]
 router.get('/pago', async(req, res) => {
 
     const idd=req.query.codigo;
@@ -319,42 +319,47 @@ router.get('/pago', async(req, res) => {
         res.send(pagos_retorno).status(200);
     }
 });
-//Parametros [codigo: monto:]
+//Parametros [jwt: codigo: monto:]
 router.post('/pago', async(req, res) => {
-    if(!req.query.jwt){
+    
+    if(!req.body.jwt){
         res.send('El JWT no es válido o no contiene el scope de este servicio').status(403);
     }
-    const afiliados = await Usuario.find({rol: 'afiliado'}).sort({date:'desc'})
-    const afiliados2 = [];
-    for(var a in afiliados){
-        afiliados2.push({
-            _id: afiliados[a]._id, correo:afiliados[a].correo, contraseña:afiliados[a].contraseña,
-            nombres:afiliados[a].nombres, apellidos:afiliados[a].apellidos, dpi:afiliados[a].dpi,
-            direccion:afiliados[a].direccion, telefono:afiliados[a].telefono, rol:afiliados[a].rol,
-            vigente: afiliados[a].vigente, fecha_inicio: afiliados[a].fecha_inicio, fecha_fin: afiliados[a].fecha_fin
-            });
-    }
+    //Validacion del Toquen
+    const validaToken=true;
+    const token=req.body.jwt;
+    jwt.verify(token, KEY, (err, data) => {
+        if(err){
+            console.log('El JWT no es válido');
+            alidaToken=false;
+            res.send('El JWT no es válido').status(403);
+            
+        }     
+    });
 
-    const mensaje={};
+    if(validaToken){
 
-    const idd=req.query.codigo;
-    const monto=req.query.monto;
-    const user=await Usuario.findOne({_id: idd});
-    if(!user){
-        afiliados[0].nombres='codigo de afiliado no existe';
-        res.send(afiliados).status(406);  
-    }else{
-        if(!monto){
-            afiliados[0].nombres='Monto invalido no existe';
-            res.send(afiliados).status(406);
+        if(!req.body.monto){
+            res.send('Monto No Existe').status(404);
+        }
+        if(!req.body.codigo){
+            res.send('Codigo No Existe en Body').status(404);
+        }
+        const idd=req.body.codigo;
+        const monto=req.body.monto;
+        const user=await Usuario.findOne({_id: idd});
+
+        if(!user){
+            console.log("Error1");
+            res.send('El codigo de Afiliado no Existe').status(406);  
         }else{
             if(monto!="100"){
-                afiliados[0].nombres='Monto debe ser de 100Q';
-                res.send(afiliados).status(406);
+                console.log("Error2");
+                res.send('Monto debe ser de 100.00 Q').status(406); 
             }else{
                 if(user.vigente){
-                    afiliados[0].nombres='el usuario aun tiene membresia';
-                    res.send(afiliados).status(406);
+                    console.log("Error3");
+                    res.send('El Usuario Aun esta Vigente').status(406); 
                 }else{
                     const new_pago = new Pago();
                     new_pago.codigo_afiliado =  idd;
@@ -365,14 +370,118 @@ router.post('/pago', async(req, res) => {
                     afiliados2.vigente='1';
                     await afiliados2.save();
 
-                    afiliados[0].nombres='PAgo Exitoso';
-                    res.send(afiliados).status(406);
+                    let consulta = {};
+                    consulta.codigo_afiliado=idd;
+                    const pagos = await Pago.find(consulta).sort({fecha:'desc'});
+                    const pagos_retorno={};
+                    pagos_retorno.id=pagos[0]._id;
+                    pagos_retorno.monto=pagos[0].monto;
+                    pagos_retorno.fecha=pagos[0].fecha;
+                    res.send(pagos_retorno).status(200);
+                    
                 }
             }
         }
+
     }
     
 });
+
+router.post('/afiliado', async(req, res) => {
+    
+    if(!req.body.jwt){
+        res.send('El JWT no es válido o no contiene el scope de este servicio').status(403);
+    }
+    //Validacion del Toquen
+    const validaToken=true;
+    const token=req.body.jwt;
+    jwt.verify(token, KEY, (err, data) => {
+        if(err){
+            console.log('El JWT no es válido');
+            alidaToken=false;
+            res.send('El JWT no es válido').status(403);
+            
+        }     
+    });
+
+    if(validaToken){
+
+       if(!req.body.nombre){
+        res.send('El Nombre no Existe').status(403);
+       }
+       if(!req.body.password){
+        res.send('El password no existe').status(403);
+       }
+
+       const nombre=req.body.nombre;
+       const password=req.body.password;
+
+        const new_filiado = new Usuario();
+        new_filiado.correo =  nombre+"@gmail.com";
+        new_filiado.contraseña = password; 
+        new_filiado.nombres = nombre;
+        new_filiado.apellidos = nombre;
+        new_filiado.dpi = 'null';
+        new_filiado.direccion = 'null';
+        new_filiado.telefono = 'null';
+        new_filiado.rol = 'afiliado';
+        new_filiado.usuario_creador = 'null'; 
+        new_filiado.vigente = '0';
+        await new_filiado.save();
+        
+        let consulta = {};
+        consulta.correo=nombre+"@gmail.com";
+        const user = await Usuario.find(consulta);
+        const user_retorno={};
+        user_retorno.codigo=user[0]._id;
+        user_retorno.nombre=user[0].nombres;
+        user_retorno.vigente=user[0].vigente;
+        res.send(user_retorno).status(200);
+
+    }
+    
+});
+
+router.put('/afiliado', async(req, res) => {
+
+    if(!req.body.jwt){
+        res.send('El JWT no es válido o no contiene el scope de este servicio').status(403);
+    }
+    //Validacion del Toquen
+    const validaToken=true;
+    const token=req.body.jwt;
+    jwt.verify(token, KEY, (err, data) => {
+        if(err){
+            console.log('El JWT no es válido');
+            alidaToken=false;
+            res.send('El JWT no es válido').status(403);
+            
+        }     
+    });
+    if(validaToken){
+        const idd=req.body.codigo;
+        const pass=req.body.password;
+        if(!idd){
+            res.send('codigo de afiliado no existe').status(404);
+        }
+        if(!pass){
+            res.send('autenticacion no exitosa').status(401);
+        }
+    
+        let consulta = {};
+        consulta._id=idd;
+        consulta.contraseña=pass;
+
+        await Usuario.findByIdAndUpdate(idd, {nombres: req.body.nombre});
+        const user = await Usuario.find(consulta);
+        const user_retorno={};
+        user_retorno.codigo=user[0]._id;
+        user_retorno.nombre=user[0].nombres;
+        user_retorno.vigente=user[0].vigente;
+        res.send(user_retorno).status(200);
+    }
+});
+
 
 //************      OTROS   *************************/
 //Parametros [codigo]

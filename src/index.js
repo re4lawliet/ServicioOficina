@@ -16,6 +16,7 @@ require('./config/passport');
 
 //Settings Configuraciones
 app.set('port', 3001); //Para que use otro que no sea el 3000 = process.env.PORT || 3000
+app.use(bodyParser());
 app.set('views', path.join(__dirname, 'views')); //para decirle a node que views
 app.engine('.hbs', exphbs({
     defaultLayout: 'main',
@@ -57,7 +58,6 @@ app.use(require('./routes/crud_ajustador.js'));
 
 // Static Filesa
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(bodyParser());
 
 
 // Server is Listening
