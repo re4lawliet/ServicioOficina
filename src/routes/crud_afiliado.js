@@ -105,6 +105,11 @@ router.get('/admin/cancelar_afiliado/:id', async(req, res) => {
     afiliados.vigente='0';
     await afiliados.save();
 
+    let consulta = {};
+    consulta.codigo_afiliado=req.params.id;
+    const pagos = await Pago.find(consulta).sort({fecha:'desc'});
+    await Pago.findByIdAndDelete(pagos[0]._id);
+
     req.flash('succes_msg','Suscripcion Cancelada');
     res.redirect('/admin/lista_afiliados');
 });
