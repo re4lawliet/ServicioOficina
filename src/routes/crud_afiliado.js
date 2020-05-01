@@ -46,7 +46,7 @@ router.post('/admin/crear_afiliado', async(req, res) => {
             res.render('afiliado/crear_afiliado.hbs', {errors});
         }else{
 
-            const afiliados_cod = await Usuario.find({rol: 'afiliado'}).sort({date:'desc'});
+            const afiliados_cod = await Usuario.find({rol: 'afiliado'}).sort({codigo:'desc'});
             var cod_final=1;
             if(afiliados_cod[0]){
                 const cod=afiliados_cod[0].codigo;
@@ -430,7 +430,7 @@ router.post('/afiliado', async(req, res) => {
        const nombre=req.body.nombre;
        const password=req.body.password;
 
-       const afiliados_cod = await Usuario.find({rol: 'afiliado'}).sort({date:'desc'});
+       const afiliados_cod = await Usuario.find({rol: 'afiliado'}).sort({codigo:'desc'});
         var cod_final=1;
         if(afiliados_cod[0]){
             const cod=afiliados_cod[0].codigo;
