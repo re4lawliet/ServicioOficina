@@ -484,7 +484,7 @@ router.put('/afiliado', async(req, res) => {
     });
     if(validaToken){
 
-        const user_cod = await Usuario.find({codigo: codigo}).sort({fecha:'desc'});
+        const user_cod = await Usuario.find({codigo: req.body.codigo}).sort({fecha:'desc'});
         const idd=user_cod[0]._id;
         const pass=req.body.password;
         if(!idd){
@@ -495,13 +495,34 @@ router.put('/afiliado', async(req, res) => {
         }
     
         let consulta = {};
-        consulta.codigo=idd;
-        consulta.contraseña=pass;
+        consulta.codigo=req.body.codigo;
 
-        await Usuario.findByIdAndUpdate(idd, {nombres: req.body.nombre});
+        var bandera1=0;
+        var bandera2=0;
+
+        let consultachange={};
+        if(req.body.nombre){
+            consultachange.nombres=req.body.nombre;
+            bandera1=1;
+        }
+        if(req.body.password){
+            consultachange.contraseña=req.body.password;
+            bandera2=1;
+        }
+
+        if(bandera1==1&&bandera2==1){
+            await Usuario.findByIdAndUpdate(idd, {nombres: req.body.nombre, contraseña: req.body.password});
+        }else if(bandera1==0&&bandera2==1){
+            await Usuario.findByIdAndUpdate(idd, {contraseña: req.body.password});
+        }else if(bandera1==1&&bandera2==0){
+            await Usuario.findByIdAndUpdate(idd, {nombres: req.body.nombre});
+        }
+        
+        //console.log(consulta);
         const user = await Usuario.find(consulta);
+        //console.log(user);
         const user_retorno={};
-        user_retorno.codigo=user[0]._id;
+        user_retorno.codigo=user[0].codigo;
         user_retorno.nombre=user[0].nombres;
         user_retorno.vigente=user[0].vigente;
         res.send(user_retorno).status(200);
