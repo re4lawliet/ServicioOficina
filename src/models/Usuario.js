@@ -3,6 +3,9 @@ const { Schema, model } = require("mongoose");
 
 const UsuarioSchema = new Schema(
     {
+        codigo: {
+            type: Number,
+        },
         correo: {
             type: String,
             required: true

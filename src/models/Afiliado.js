@@ -3,6 +3,9 @@ const { Schema, model } = require("mongoose");
 
 const AfiliadoSchema = new Schema(
     {
+        codigo: {
+            type: Number,
+        },
         correo: {
             type: String,
             required: true

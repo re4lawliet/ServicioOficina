@@ -45,7 +45,18 @@ router.post('/admin/crear_afiliado', async(req, res) => {
             errors.push({text:'El Usuario Afiliado Ya esta en Uso',});
             res.render('afiliado/crear_afiliado.hbs', {errors});
         }else{
+
+            const afiliados_cod = await Usuario.find({rol: 'afiliado'}).sort({date:'desc'});
+            var cod_final=1;
+            if(afiliados_cod[0]){
+                const cod=afiliados_cod[0].codigo;
+                const x=parseInt(cod);
+                cod_final=x+1;
+            }
+            console.log(cod_final);
+
             const new_filiado = new Usuario();
+            new_filiado.codigo = cod_final;
             new_filiado.correo =  email;
             new_filiado.contraseña = password; 
             new_filiado.nombres = nombres;
@@ -265,12 +276,12 @@ router.get('/afiliado', async(req, res) => {
         }
     
         let consulta = {};
-        consulta._id=idd;
+        consulta.codigo=idd;
         consulta.contraseña=pass;
         const afiliado = await Usuario.find(consulta);
         
         const objretorno={};
-        objretorno.codigo=afiliado[0]._id;
+        objretorno.codigo=afiliado[0].codigo;
         objretorno.nombre=afiliado[0].nombres + " " +afiliado[0].apellidos;
         objretorno.vigente=afiliado[0].vigente;
         objretorno.rol=afiliado[0].rol;
@@ -286,7 +297,7 @@ router.get('/afiliado', async(req, res) => {
 //Parametros [jwt: codigo:]
 router.get('/pago', async(req, res) => {
 
-    const idd=req.query.codigo;
+    const codigo=req.query.codigo;
     
     if(!req.query.jwt){
         res.send('El JWT no es válido o no contiene el scope de este servicio').status(403);
@@ -305,9 +316,12 @@ router.get('/pago', async(req, res) => {
     });
 
     if(validaToken){
-        if(!idd){
+        if(!codigo){
             res.send('codigo de afiliado no existe').status(404);
         }
+        const user = await Usuario.find({codigo: codigo}).sort({fecha:'desc'});
+        const idd=user[0]._id;
+
         let consulta = {};
         consulta.codigo_afiliado=idd;
         
@@ -347,7 +361,7 @@ router.post('/pago', async(req, res) => {
         }
         const idd=req.body.codigo;
         const monto=req.body.monto;
-        const user=await Usuario.findOne({_id: idd});
+        const user=await Usuario.findOne({codigo: idd});
 
         if(!user){
             console.log("Error1");
@@ -362,16 +376,16 @@ router.post('/pago', async(req, res) => {
                     res.send('El Usuario Aun esta Vigente').status(406); 
                 }else{
                     const new_pago = new Pago();
-                    new_pago.codigo_afiliado =  idd;
+                    new_pago.codigo_afiliado =  user[0]._id;
                     new_pago.monto = monto; 
                     new_pago.save();
 
-                    const afiliados2=await Usuario.findById(idd);
+                    const afiliados2=await Usuario.findById(user[0]._id);
                     afiliados2.vigente='1';
                     await afiliados2.save();
 
                     let consulta = {};
-                    consulta.codigo_afiliado=idd;
+                    consulta.codigo_afiliado=user[0]._id;
                     const pagos = await Pago.find(consulta).sort({fecha:'desc'});
                     const pagos_retorno={};
                     pagos_retorno.id=pagos[0]._id;
@@ -416,7 +430,17 @@ router.post('/afiliado', async(req, res) => {
        const nombre=req.body.nombre;
        const password=req.body.password;
 
+       const afiliados_cod = await Usuario.find({rol: 'afiliado'}).sort({date:'desc'});
+        var cod_final=1;
+        if(afiliados_cod[0]){
+            const cod=afiliados_cod[0].codigo;
+            const x=parseInt(cod);
+            cod_final=x+1;
+        }
+        console.log(cod_final);
+
         const new_filiado = new Usuario();
+        new_filiado.codigo=cod_final;
         new_filiado.correo =  nombre+"@gmail.com";
         new_filiado.contraseña = password; 
         new_filiado.nombres = nombre;
@@ -433,7 +457,7 @@ router.post('/afiliado', async(req, res) => {
         consulta.correo=nombre+"@gmail.com";
         const user = await Usuario.find(consulta);
         const user_retorno={};
-        user_retorno.codigo=user[0]._id;
+        user_retorno.codigo=user[0].codigo;
         user_retorno.nombre=user[0].nombres;
         user_retorno.vigente=user[0].vigente;
         res.send(user_retorno).status(200);
@@ -459,7 +483,9 @@ router.put('/afiliado', async(req, res) => {
         }     
     });
     if(validaToken){
-        const idd=req.body.codigo;
+
+        const user_cod = await Usuario.find({codigo: codigo}).sort({fecha:'desc'});
+        const idd=user_cod[0]._id;
         const pass=req.body.password;
         if(!idd){
             res.send('codigo de afiliado no existe').status(404);
@@ -469,7 +495,7 @@ router.put('/afiliado', async(req, res) => {
         }
     
         let consulta = {};
-        consulta._id=idd;
+        consulta.codigo=idd;
         consulta.contraseña=pass;
 
         await Usuario.findByIdAndUpdate(idd, {nombres: req.body.nombre});
