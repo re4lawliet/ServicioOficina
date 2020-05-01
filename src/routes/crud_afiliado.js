@@ -376,16 +376,16 @@ router.post('/pago', async(req, res) => {
                     res.send('El Usuario Aun esta Vigente').status(406); 
                 }else{
                     const new_pago = new Pago();
-                    new_pago.codigo_afiliado =  user[0]._id;
+                    new_pago.codigo_afiliado =  user._id;
                     new_pago.monto = monto; 
                     new_pago.save();
 
-                    const afiliados2=await Usuario.findById(user[0]._id);
+                    const afiliados2=await Usuario.findById(user._id);
                     afiliados2.vigente='1';
                     await afiliados2.save();
 
                     let consulta = {};
-                    consulta.codigo_afiliado=user[0]._id;
+                    consulta.codigo_afiliado=user._id;
                     const pagos = await Pago.find(consulta).sort({fecha:'desc'});
                     const pagos_retorno={};
                     pagos_retorno.id=pagos[0]._id;
